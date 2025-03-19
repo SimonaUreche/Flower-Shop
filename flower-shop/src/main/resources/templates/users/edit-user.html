@@ -1,0 +1,67 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit User</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Building Management</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="btn btn-primary ms-2" href="/user">Back to Users List</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h1>Edit User</h1>
+
+    <!-- Edit User Form -->
+    <form th:action="@{/user/update}" method="post">
+        <input type="hidden" name="id" th:value="${user.id}" />
+
+        <div class="mb-3">
+            <label for="userName" class="form-label">User Name</label>
+            <input type="text" class="form-control" id="userName" name="name" th:value="${user.name}" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="userEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="userEmail" name="email" th:value="${user.email}" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="userPhone" class="form-label">Phone Number</label>
+            <input type="text" class="form-control" id="userPhone" name="phoneNumber" th:value="${user.phoneNumber}" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="userAddress" class="form-label">Address</label>
+            <input type="text" class="form-control" id="userAddress" name="address" th:value="${user.address}" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="userRole" class="form-label">Role</label>
+            <select class="form-control" id="userRole" name="role">
+                <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">ADMIN</option>
+                <option value="USER" th:selected="${user.role == 'USER'}">USER</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+
+</body>
+</html>
