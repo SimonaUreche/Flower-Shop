@@ -3,10 +3,12 @@ package com.flowerstore.flower_shop.service.impl;
 import com.flowerstore.flower_shop.model.OrderDetails;
 import com.flowerstore.flower_shop.repository.OrderDetailsRepository;
 import com.flowerstore.flower_shop.service.IOrderDetailsService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
+@Service
 public class OrderDetailsServiceImpl implements IOrderDetailsService {
     private final OrderDetailsRepository orderDetailsRepository;
 

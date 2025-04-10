@@ -3,9 +3,11 @@ package com.flowerstore.flower_shop.service.impl;
 import com.flowerstore.flower_shop.model.Review;
 import com.flowerstore.flower_shop.repository.ReviewRepository;
 import com.flowerstore.flower_shop.service.IReviewService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ReviewServicImpl implements IReviewService {
     private ReviewRepository reviewRepository;
 

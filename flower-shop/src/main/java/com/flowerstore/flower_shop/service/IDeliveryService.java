@@ -1,6 +1,7 @@
 package com.flowerstore.flower_shop.service;
 
 import com.flowerstore.flower_shop.model.Delivery;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 

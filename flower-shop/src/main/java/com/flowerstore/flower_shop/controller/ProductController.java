@@ -2,53 +2,19 @@ package com.flowerstore.flower_shop.controller;
 
 import com.flowerstore.flower_shop.model.Product;
 import com.flowerstore.flower_shop.service.IProductService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
-//@RestController
-//@RequestMapping("/product")
-//@CrossOrigin(origins = "http://localhost:3000")
-//public class ProductController {
-//    private final MockDataService mockDataService;
-//
-//    public ProductController(MockDataService mockDataService) {
-//        this.mockDataService = mockDataService;
-//    }
-//
-//    @GetMapping
-//    public List<Product> getAllProducts() {
-//        return mockDataService.getProducts();
-//    }
-//
-//    @PostMapping
-//    public Product addProduct(@RequestBody Product product) {
-//        return mockDataService.addProduct(product);
-//    }
-//
-//    @GetMapping("/{id}")
-//    public Product getProductById(@PathVariable Long id) {
-//        return mockDataService.getProducts().stream()
-//                .filter(product -> product.getId().equals(id))
-//                .findFirst().orElse(null);
-//    }
-//    @PutMapping("/{id}")
-//    public Product updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
-//        return mockDataService.updateProduct(id, updatedProduct);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public void deleteProduct(@PathVariable Long id) {
-//        mockDataService.deleteProduct(id);
-//    }
-//}
-
-
-@Controller
-@RequestMapping("/product")
+@RestController
+@CrossOrigin
+@RequestMapping("/products")
 public class ProductController {
     private final IProductService iProductService;
 
@@ -56,39 +22,72 @@ public class ProductController {
         this.iProductService = iProductService;
     }
 
-    @GetMapping()
-    public String showProducts(Model model) {
-        List<Product> products = iProductService.getAllProducts();
-        model.addAttribute("products", products);
-        return "products/list-products";
+    @Operation(
+            summary = "Fetch all products",
+            description = "This method retrieves all the products from the database."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully fetched all products.")
+    })
+    @GetMapping
+    public ResponseEntity findAllProducts() {
+        return ResponseEntity.status(HttpStatus.OK).body(iProductService.getAllProducts());
     }
 
-    @PostMapping("/save")
-    public String saveProducts(@ModelAttribute Product product) {
-        iProductService.addProduct(product);
-        return "redirect:/product";
+    @Operation(
+            summary = "Create a new product",
+            description = "This method allows adding a new product to the database."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully added a new product."),
+            @ApiResponse(responseCode = "400", description = "Invalid product data.")
+    })
+    @PostMapping
+    public ResponseEntity saveNewProduct(@RequestBody Product product) {
+        return ResponseEntity.status(HttpStatus.OK).body(iProductService.addProduct(product));
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
+    @Operation(
+            summary = "Get product by ID",
+            description = "This method retrieves a product based on the provided ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product found."),
+            @ApiResponse(responseCode = "404", description = "Product not found.")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity getProduct(@Parameter(description = "The ID of the product to fetch", required = true) @PathVariable Long id) {
         try {
-            Product product = iProductService.getProductById(id);
-            model.addAttribute("product", product);
-            return "products/edit-product";
+            return ResponseEntity.status(HttpStatus.OK).body(iProductService.getProductById(id));
         } catch (NoSuchElementException e) {
-            return "redirect:/product";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
-    @PostMapping("/update")
-    public String updateProduct(@ModelAttribute Product product) {
-        iProductService.updateProduct(product);
-        return "redirect:/product";
+    @Operation(
+            summary = "Update an existing product",
+            description = "This method updates the details of an existing product."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated the product."),
+            @ApiResponse(responseCode = "400", description = "Invalid product data.")
+    })
+    @PutMapping
+    public ResponseEntity updateProduct(@RequestBody Product product) {
+        return ResponseEntity.status(HttpStatus.OK).body(iProductService.updateProduct(product));
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteProduct(@PathVariable Long id) {
+    @Operation(
+            summary = "Delete a product",
+            description = "This method deletes a product by its ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully deleted the product."),
+            @ApiResponse(responseCode = "404", description = "Product not found.")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteProduct(@Parameter(description = "The ID of the product to delete", required = true) @PathVariable Long id) {
         iProductService.deleteProduct(id);
-        return "redirect:/product";
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Successful operation");
     }
 }

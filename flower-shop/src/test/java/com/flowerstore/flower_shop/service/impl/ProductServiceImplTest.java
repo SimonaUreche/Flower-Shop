@@ -1,6 +1,7 @@
 package com.flowerstore.flower_shop.service.impl;
 
 import com.flowerstore.flower_shop.constants.UserType;
+import com.flowerstore.flower_shop.model.Category;
 import com.flowerstore.flower_shop.model.Product;
 import com.flowerstore.flower_shop.model.User;
 import com.flowerstore.flower_shop.repository.ProductRepository;
@@ -11,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.flowerstore.flower_shop.model.Category;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +36,8 @@ class ProductServiceImplTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
         productService = new ProductServiceImpl(productRepository);
-        testProduct = new Product(1L, "Trandafir", 15.0, "Trandafir roșu superb", "trandafir.jpg", "Flori", 10);
+        Category category = new Category(2L, "Flori");
+        testProduct = new Product(1L, "Trandafir", 15.0, "Trandafir roșu superb", "trandafir.jpg", category, 10);
     }
     @Test
     void testAddProduct() {
@@ -54,9 +57,10 @@ class ProductServiceImplTest {
 
     @Test
     void testGetAllProducts() {
+        Category category = new Category(2L, "Flori");
         List<Product> productList = Arrays.asList(
                 testProduct,
-                new Product(2L, "Lalea", 12.0, "Lalea galbenă", "lalea.jpg", "Flori", 5)
+                new Product(2L, "Lalea", 12.0, "Lalea galbenă", "lalea.jpg", category, 5)
         );
         when(productRepository.findAll()).thenReturn(productList);
 

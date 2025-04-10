@@ -58,7 +58,7 @@ public class MockDataServiceImpl implements MockDataService {
         }
 
         // Generăm 5 produse random
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 15; i++) {
             Product product = new Product();
             product.setId((long) i);
             product.setName(faker.commerce().productName());

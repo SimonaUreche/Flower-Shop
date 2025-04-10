@@ -10,12 +10,7 @@
                     <form th:action="@{/order/save}" method="post">
                         <input type="hidden" id="orderId" name="id">
 
-                        <div class="mb-3">
-                            <label for="orderUser" class="form-label">User</label>
-                            <select class="form-control" id="orderUser" name="user.id" required>
-                                <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.name}"></option>
-                            </select>
-                        </div>
+                        <!--backend-ul adaugă automat un user -->
 
                         <div class="mb-3">
                             <label for="orderStatus" class="form-label">Status</label>

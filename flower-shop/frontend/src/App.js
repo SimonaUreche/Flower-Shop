@@ -1,27 +1,26 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import UsersList from './components/UsersList';
-import ProductsList from './components/ProductsList';
+import './App.css';
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
+import Users from './components/users/Users';
+import Login from './Login';
+import Products from './components/products/Product';
+import CheckoutWrapper from "./components/checkout/Checkout";
+import CartWrapper from "./components/Cart/Cart";
+import OrderConfirmation from "./components/checkout/OrderConfirmation";
 
 function App() {
     return (
         <Router>
-            <div className="App">
-                <nav>
-                    <ul>
-                        <li><Link to="/users">Utilizatori</Link></li>
-                        <li><Link to="/products">Produse</Link></li>
-                    </ul>
-                </nav>
-
-                <Routes>
-                    <Route path="/users" element={<UsersList />} />
-                    <Route path="/products" element={<ProductsList />} />
-                    <Route path="/" element={<h1>Bine ai venit! Alege o pagină.</h1>} />
-                </Routes>
-            </div>
+            <Routes>
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/cart" element={<CartWrapper />} />
+                <Route path="/checkout" element={<CheckoutWrapper />} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
+            </Routes>
         </Router>
-    );
+    )
 }
 
 export default App;

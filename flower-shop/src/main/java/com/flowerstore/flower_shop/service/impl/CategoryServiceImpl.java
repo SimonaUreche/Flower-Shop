@@ -3,9 +3,11 @@ package com.flowerstore.flower_shop.service.impl;
 import com.flowerstore.flower_shop.model.Category;
 import com.flowerstore.flower_shop.repository.CategoryRepository;
 import com.flowerstore.flower_shop.service.ICategoryService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class CategoryServiceImpl implements ICategoryService {
     private final CategoryRepository categoryRepository;
 

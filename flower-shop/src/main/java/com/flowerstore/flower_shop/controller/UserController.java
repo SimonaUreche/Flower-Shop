@@ -2,95 +2,74 @@ package com.flowerstore.flower_shop.controller;
 
 import com.flowerstore.flower_shop.model.User;
 import com.flowerstore.flower_shop.service.IUserService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 import java.util.NoSuchElementException;
 
-//@RestController
-//@RequestMapping("/users")
-//@CrossOrigin(origins = "http://localhost:3000") //Permite cereri din React (care rulează pe portul 3000)
-//public class UserController {
-//    private final MockDataService mockDataService;
-//
-//    public UserController(MockDataService mockDataService) {
-//        this.mockDataService = mockDataService;
-//    }
-//
-//    @GetMapping
-//    public List<User> getAllUsers() {
-//        return mockDataService.getUsers();
-//    }
-//
-//    @PostMapping
-//    public User addUser(@RequestBody User user) {
-//        return mockDataService.addUser(user);
-//    }
-//
-//    @GetMapping("/{id}")
-//    public User getUserById(@PathVariable Long id) {
-//        return mockDataService.getUsers().stream()
-//                .filter(user -> user.getId().equals(id))
-//                .findFirst()
-//                .orElseThrow(() -> new NoSuchElementException("User not found"));
-//    }
-//
-//    @PutMapping("/{id}")
-//    public User updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
-//        return mockDataService.updateUser(id, updatedUser);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public void deleteUser(@PathVariable Long id) {
-//        mockDataService.deleteUser(id);
-//    }
-//}
-
-@Controller
-@RequestMapping("/user")
+@RestController
+@CrossOrigin
+@RequestMapping("/users")
 public class UserController {
-    private final IUserService iUserService;
+    private final IUserService iuserService;
 
-    public UserController(IUserService iUserService) {
-        this.iUserService = iUserService;
+    public UserController(IUserService iuserService) {
+        this.iuserService = iuserService;
     }
 
-    @GetMapping()
-    public String showUsers(Model model) {
-        List<User> users = iUserService.getAllUsers();
-        model.addAttribute("users", users);
-        return "users/list-users";
+    @Operation(summary = "Fetch all users", description = "This method returns a list of all users in the database.")
+    @ApiResponse(responseCode = "200", description = "The list of users was successfully returned.")
+    @GetMapping
+    public ResponseEntity findAllUsers() {
+        return ResponseEntity.status(HttpStatus.OK).body(iuserService.getAllUsers());
     }
 
-    @PostMapping("/save")
-    public String saveUsers(@ModelAttribute User user) {
-        iUserService.addUser(user);
-        return "redirect:/user";
+    @Operation(summary = "Create a new user", description = "This method adds a new user to the database.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User was successfully added."),
+            @ApiResponse(responseCode = "400", description = "The request contains invalid data.")
+    })
+    @PostMapping
+    public ResponseEntity saveNewUser(@RequestBody User user) {
+        return ResponseEntity.status(HttpStatus.OK).body(iuserService.addUser(user));
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
+    @Operation(summary = "Fetch a user by ID", description = "This method returns the user with the specified ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User was found and returned."),
+            @ApiResponse(responseCode = "404", description = "User not found.")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity getUser(@Parameter(description = "ID-ul utilizatorului", required = true) @PathVariable Long id) {
         try {
-            User user = iUserService.getUserById(id);
-            model.addAttribute("user", user);
-            return "users/edit-user";
+            return ResponseEntity.status(HttpStatus.OK).body(iuserService.getUserById(id));
         } catch (NoSuchElementException e) {
-            return "redirect:/user";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
-    @PostMapping("/update")
-    public String updateUsers(@ModelAttribute User user) {
-        iUserService.updateUser(user);
-        return "redirect:/user";
+    @Operation(summary = "Update user information", description = "This method allows updating the data of an existing user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User was successfully updated."),
+            @ApiResponse(responseCode = "400", description = "The provided data is invalid.")
+    })
+    @PutMapping
+    public ResponseEntity updateUser(@RequestBody User user) {
+        return ResponseEntity.status(HttpStatus.OK).body(iuserService.updateUser(user));
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteUsers(@PathVariable Long id) {
-        iUserService.deleteUser(id);
-        return "redirect:/user";
+    @Operation(summary = "Delete a user", description = "This method deletes the user with the specified ID from the database.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "User was successfully deleted."),
+            @ApiResponse(responseCode = "404", description = "User not found.")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteUser(@Parameter(description = "ID-ul utilizatorului", required = true) @PathVariable Long id) {
+        iuserService.deleteUser(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("successful operation");
     }
-
 }

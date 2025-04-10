@@ -1,10 +1,12 @@
 package com.flowerstore.flower_shop.repository;
 
 import com.flowerstore.flower_shop.model.Delivery;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class DeliveryRepository {
     private final List<Delivery> deliveries = new ArrayList<>();
     private Long nextId = 1L;

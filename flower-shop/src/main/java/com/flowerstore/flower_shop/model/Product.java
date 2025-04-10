@@ -1,6 +1,6 @@
 package com.flowerstore.flower_shop.model;
+import com.flowerstore.flower_shop.model.Category;
 
-import jdk.jfr.Category;
 import lombok.*;
 
 @Builder
@@ -10,13 +10,12 @@ import lombok.*;
 @Setter
 @ToString
 
-public class Product { //intreb daca mai adaug atribute sau fac clasa care mosteneste product?
+public class Product {
     private Long id;
     private String name;
     private double price;
     private String description;
     private String image;
-   // private Category category; //relatie cu modelul Category
-   private String category; //pt moment
+    private Category category;
     private int stock;
 }

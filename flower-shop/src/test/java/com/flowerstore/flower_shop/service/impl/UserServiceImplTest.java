@@ -31,15 +31,15 @@ class UserServiceImplTest {
     }
 
     @Test
-    void givenValidUser_whenAddUser_thenReturnSavedUser() {
+    void givenValidUser_whenAddUser_thenReturnSavedUser() { //testam adaugarea unui utilizator
         when(userRepository.save(testUser)).thenReturn(testUser);
-
+        //se asigura ca, atunci cand save() este apelata, repo-ul returneaza un testUser
         User result = userService.addUser(testUser);
 
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
+        assertNotNull(result); //se verifica daca rez nu e null
+        assertEquals(1L, result.getId()); //se verifica id
         assertEquals("Test User", result.getName());
-        verify(userRepository, times(1)).save(testUser);
+        verify(userRepository, times(1)).save(testUser); //verifica daca save() a fost apelata o singura data
     }
 
     @Test
@@ -70,7 +70,7 @@ class UserServiceImplTest {
     void givenNonExistingUser_whenGetUserById_thenThrowException() {
         when(userRepository.findById(1L)).thenReturn(null);
 
-        assertThrows(NoSuchElementException.class, () -> userService.getUserById(1L));
+        assertThrows(NoSuchElementException.class, () -> userService.getUserById(1L)); //se asteapta aruncarea unei exceptii
     }
 
     @Test

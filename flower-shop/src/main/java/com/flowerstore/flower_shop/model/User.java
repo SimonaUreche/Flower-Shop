@@ -10,7 +10,7 @@ import lombok.*;
 @Setter
 @ToString
 
-public class User { //trebuie sa adaug si parola/cum sa procedez cu parola?
+public class User {
     private Long id;
     private String name;
     private String email;
