@@ -1,7 +1,6 @@
 package com.flowerstore.flower_shop.repository;
 
 import com.flowerstore.flower_shop.model.Category;
-import com.flowerstore.flower_shop.model.Product;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
