@@ -1,5 +1,7 @@
 package com.flowerstore.flower_shop.service.impl;
 
+import com.flowerstore.flower_shop.exceptions.UserAlreadyExistsException;
+import com.flowerstore.flower_shop.model.Product;
 import com.flowerstore.flower_shop.model.User;
 import com.flowerstore.flower_shop.repository.UserRepository;
 import com.flowerstore.flower_shop.service.IUserService;
@@ -18,6 +20,9 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public User addUser(User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
+        }
         return userRepository.save(user);
     }
 
@@ -28,18 +33,17 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public User getUserById(Long id) {
-        User user = userRepository.findById(id);
-        if(user != null) {
-            return user;
-        }
-        throw new NoSuchElementException("User with id" +  id + " does not exist");
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User with id " + id + " not found"));
     }
 
     @Override
     public User updateUser(User user) {
-        return userRepository.updateUser(user);
+        if (!userRepository.existsById(user.getId())) {
+            throw new NoSuchElementException("User not found for update");
+        }
+        return userRepository.save(user);
     }
-
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);

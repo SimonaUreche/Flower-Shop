@@ -11,6 +11,10 @@ public class CheckoutRequestDTO {
     private Long userId;
     private String fullName;
     private String email;
+    private String phone;
     private String address;
-    private List<OrderDetailDTO> orderDetails;
+    private String oras;
+    private String judet;
+    private String codPostal;
+    private List<OrderDetailsDTO> orderDetails;
 }

@@ -4,8 +4,9 @@ import Users from './components/users/Users';
 import Login from './Login';
 import Products from './components/products/Product';
 import CheckoutWrapper from "./components/checkout/Checkout";
-import CartWrapper from "./components/Cart/Cart";
+import CartWrapper from "./components/cart/Cart";
 import OrderConfirmation from "./components/checkout/OrderConfirmation";
+import Order from "./components/orders/Orders";
 
 function App() {
     return (
@@ -18,6 +19,7 @@ function App() {
                 <Route path="/cart" element={<CartWrapper />} />
                 <Route path="/checkout" element={<CheckoutWrapper />} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                <Route path="/orders" element={<Order />} />
             </Routes>
         </Router>
     )

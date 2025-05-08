@@ -27,16 +27,16 @@ public class DeliveryServiceImpl implements IDeliveryService {
 
     @Override
     public Delivery getDeliveryById(Long id) {
-        Delivery delivery = deliveryRepository.findById(id);
-        if(delivery != null) {
-            return delivery;
-        }
-        throw new NoSuchElementException("Delivery with id" +  id + " does not exist");
+        return deliveryRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Delivery with id " + id + " not found"));
     }
 
     @Override
     public Delivery updateDelivery(Delivery delivery) {
-        return deliveryRepository.updateDelivery(delivery);
+        if (!deliveryRepository.existsById(delivery.getId())) {
+            throw new NoSuchElementException("Delivery not found for update");
+        }
+        return deliveryRepository.save(delivery);
     }
 
     @Override

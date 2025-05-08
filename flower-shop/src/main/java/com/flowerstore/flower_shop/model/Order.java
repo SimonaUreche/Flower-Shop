@@ -1,7 +1,6 @@
 package com.flowerstore.flower_shop.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
@@ -11,11 +10,19 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-
+@Entity
+@Table(name = "customer_order")
 public class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private User user; //se pot realiza comenzi si contul de admin/livrator?
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetails> orderDetails;
-    private double totalPrice; //pt lista de order details
+
+    private double totalPrice;
     private String status;
 }

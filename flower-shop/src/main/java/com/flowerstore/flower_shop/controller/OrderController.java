@@ -1,121 +1,139 @@
 package com.flowerstore.flower_shop.controller;
 
 import com.flowerstore.flower_shop.dto.CheckoutRequestDTO;
+import com.flowerstore.flower_shop.dto.OrderDTO;
+import com.flowerstore.flower_shop.dto.OrderStatusNotification;
+import com.flowerstore.flower_shop.mapper.OrderMapper;
 import com.flowerstore.flower_shop.model.Order;
+import com.flowerstore.flower_shop.model.OrderDetails;
+import com.flowerstore.flower_shop.model.User;
+import com.flowerstore.flower_shop.service.IOrderDetailsService;
 import com.flowerstore.flower_shop.service.IOrderService;
+import com.flowerstore.flower_shop.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/order")
+@CrossOrigin
+@RequestMapping("/orders")
 public class OrderController {
-    private final IOrderService iOrderService;
+    private final IOrderService orderService;
+    private final IUserService userService;
+    private final IOrderDetailsService orderDetailsService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
-    public OrderController(IOrderService iOrderService) {
-        this.iOrderService = iOrderService;
+    public OrderController(IOrderService orderService, IUserService userService, IOrderDetailsService orderDetailsService) {
+        this.orderService = orderService;
+        this.userService = userService;
+        this.orderDetailsService = orderDetailsService;
     }
 
-    @Operation(
-            summary = "Fetch all orders",
-            description = "Returns a list of all orders from the database."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully fetched all orders")
-    })
+    @Operation(summary = "Fetch all orders", description = "This method returns all orders from the database.")
+    @ApiResponse(responseCode = "200", description = "Successfully returned all orders.")
     @GetMapping
-    public ResponseEntity findAllOrders() {
-        return ResponseEntity.status(HttpStatus.OK).body(iOrderService.getAllOrders());
+    public ResponseEntity<List<OrderDTO>> findAllOrders() {
+        List<OrderDTO> dtos = orderService.getAllOrders().stream()
+                .map(OrderMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
-    @Operation(
-            summary = "Create a new order",
-            description = "This method adds a new order to the database."
-    )
+
+    @Operation(summary = "Fetch all orders for a specific user", description = "This method returns all orders for a given user based on the user ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully added a new order."),
-            @ApiResponse(responseCode = "400", description = "Invalid input data.")
+            @ApiResponse(responseCode = "200", description = "Successfully returned the user's orders."),
+            @ApiResponse(responseCode = "404", description = "User not found.")
     })
-    @PostMapping
-    public ResponseEntity saveNewOrder(@RequestBody Order order) {
-        return ResponseEntity.status(HttpStatus.OK).body(iOrderService.addOrder(order));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<OrderDTO>> findOrdersByUser(@PathVariable Long userId) {
+        List<OrderDTO> dtos = orderService.getOrdersByUserId(userId).stream()
+                .map(OrderMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
-    @Operation(
-            summary = "Fetch an order by ID",
-            description = "Returns an order based on the provided order ID."
-    )
+
+
+    @Operation(summary = "Fetch an order by ID", description = "This method returns the order for the specified ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order found."),
+            @ApiResponse(responseCode = "200", description = "Successfully returned the order."),
             @ApiResponse(responseCode = "404", description = "Order not found.")
     })
     @GetMapping("/{id}")
-    public ResponseEntity getOrder(@Parameter(description = "The ID of the order to fetch", required = true) @PathVariable Long id) {
+    public ResponseEntity<OrderDTO> getOrder(@PathVariable Long id) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(iOrderService.getOrderById(id));
+            Order order = orderService.getOrderById(id);
+            return ResponseEntity.ok(OrderMapper.toDTO(order));
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
-    @Operation(
-            summary = "Update an order",
-            description = "This method allows updating the details of an existing order."
-    )
+    @Operation(summary = "Place an order (checkout)", description = "Creates an order from the shopping cart.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully updated the order."),
-            @ApiResponse(responseCode = "400", description = "Invalid order data.")
+            @ApiResponse(responseCode = "200", description = "Successfully processed checkout."),
+            @ApiResponse(responseCode = "400", description = "Invalid request."),
+            @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
-    @PutMapping
-    public ResponseEntity updateOrder(@RequestBody Order order) {
-        return ResponseEntity.status(HttpStatus.OK).body(iOrderService.updateOrder(order));
+    @PostMapping("/checkout")
+    public ResponseEntity<OrderDTO> checkout(@RequestBody CheckoutRequestDTO checkoutRequest) {
+        try {
+            Order order = orderService.processCheckout(checkoutRequest);
+            System.out.println(checkoutRequest);
+            return ResponseEntity.ok(OrderMapper.toDTO(order));
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    @Operation(
-            summary = "Delete an order",
-            description = "This method deletes the order with the given ID."
-    )
+
+    @Operation(summary = "Delete an order", description = "This method deletes the order with the specified ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Successfully deleted the order."),
             @ApiResponse(responseCode = "404", description = "Order not found.")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteOrder(@Parameter(description = "The ID of the order to delete", required = true) @PathVariable Long id) {
-        iOrderService.deleteOrder(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("successful operation");
-    }
-
-    @Operation(
-            summary = "Checkout process",
-            description = "This method processes the checkout for a user and sends an email confirmation."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order processed successfully and email sent."),
-            @ApiResponse(responseCode = "400", description = "Invalid user ID or other error during checkout.")
-    })
-    @PostMapping("/checkout")
-    //primeste cerere de checkout de la frontend(detaliile comenzii), iar backend trimite un raspuns
-    public  ResponseEntity<Map<String, Object>> checkout(@RequestBody CheckoutRequestDTO checkoutRequest) {
+    public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
         try {
-            Order order = iOrderService.processCheckout(checkoutRequest);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("orderId", order.getId());
+            orderService.getOrderById(id);
+            orderService.deleteOrder(id);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Order deleted successfully");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found.");
+        }
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);        }
     }
+
+    @Operation(summary = "Update order status", description = "This method updates the status of an existing order.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated the order status."),
+            @ApiResponse(responseCode = "404", description = "Order not found.")
+    })
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable Long id, @RequestParam String status) {
+        try {
+            Order updated = orderService.updateOrderStatus(id, status);
+
+            OrderStatusNotification notification = new OrderStatusNotification(updated.getId(), updated.getStatus());
+            messagingTemplate.convertAndSend("/topic/order-status", notification);
+
+            return ResponseEntity.ok(OrderMapper.toDTO(updated));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
 }

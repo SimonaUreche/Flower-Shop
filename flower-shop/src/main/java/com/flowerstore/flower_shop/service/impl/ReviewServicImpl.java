@@ -6,10 +6,12 @@ import com.flowerstore.flower_shop.service.IReviewService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class ReviewServicImpl implements IReviewService {
-    private ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
 
     public ReviewServicImpl(ReviewRepository reviewRepository) {
         this.reviewRepository = reviewRepository;
@@ -27,10 +29,7 @@ public class ReviewServicImpl implements IReviewService {
 
     @Override
     public Review getReviewsById(Long id) {
-        Review review = reviewRepository.findById(id);
-        if(review != null){
-            return review;
-        }
-        return null;
+        return reviewRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Review with id " + id + " not found"));
     }
 }

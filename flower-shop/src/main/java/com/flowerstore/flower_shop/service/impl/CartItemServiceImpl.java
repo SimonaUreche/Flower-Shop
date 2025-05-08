@@ -3,10 +3,12 @@ package com.flowerstore.flower_shop.service.impl;
 import com.flowerstore.flower_shop.model.CartItem;
 import com.flowerstore.flower_shop.repository.CartItemRepository;
 import com.flowerstore.flower_shop.service.ICartItemService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class CartItemServiceImpl implements ICartItemService {
@@ -18,14 +20,25 @@ public class CartItemServiceImpl implements ICartItemService {
 
     @Override
     public CartItem addCartItem(CartItem cartItem) {
-        CartItem existingItem = cartItemRepository.findByUserIdAndProductId(
+        Optional<CartItem> optionalItem = cartItemRepository.findByUserIdAndProductId(
                 cartItem.getUser().getId(), cartItem.getProduct().getId()
         );
 
-        if (existingItem != null) {
+        if (optionalItem.isPresent()) {
+            CartItem existingItem = optionalItem.get();
+
+            int totalQuantity = existingItem.getQuantity() + cartItem.getQuantity();
+
+            if (totalQuantity > cartItem.getProduct().getStock()) {
+                throw new IllegalArgumentException("Quantity exceeds available stock");
+            }
+
             existingItem.setQuantity(existingItem.getQuantity() + cartItem.getQuantity());
-            return existingItem;
+            return cartItemRepository.save(existingItem);
         } else {
+            if (cartItem.getQuantity() > cartItem.getProduct().getStock()) {
+                throw new IllegalArgumentException("Quantity exceeds available stock");
+            }
             return cartItemRepository.save(cartItem);
         }
     }
@@ -37,16 +50,21 @@ public class CartItemServiceImpl implements ICartItemService {
 
     @Override
     public CartItem getCartItemById(Long id) {
-        CartItem cartItem = cartItemRepository.findById(id);
-        if(cartItem != null){
-            return cartItem;
-        }
-        throw new NoSuchElementException("Cart Item with id " + id+ "not found");
+        return cartItemRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Cart item with id " + id + " not found"));
     }
 
     @Override
     public CartItem updateCartItem(CartItem cartItem) {
-        return cartItemRepository.updateCartItem(cartItem);
+        CartItem existing = cartItemRepository.findById(cartItem.getId())
+                .orElseThrow(() -> new NoSuchElementException("Cart item not found"));
+
+        if (cartItem.getQuantity() > cartItem.getProduct().getStock()) {
+            throw new IllegalArgumentException("Quantity exceeds available stock");
+        }
+
+        existing.setQuantity(cartItem.getQuantity());
+        return cartItemRepository.save(existing);
     }
 
     @Override
@@ -60,7 +78,8 @@ public class CartItemServiceImpl implements ICartItemService {
     }
 
     @Override
+    @Transactional
     public void clearCart(Long userId) {
-        cartItemRepository.clearByUserId(userId);
+        cartItemRepository.deleteByUserId(userId);
     }
 }

@@ -6,6 +6,7 @@ import com.flowerstore.flower_shop.service.ICategoryService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class CategoryServiceImpl implements ICategoryService {
@@ -14,6 +15,7 @@ public class CategoryServiceImpl implements ICategoryService {
     public CategoryServiceImpl(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
+
     @Override
     public Category addCategory(Category category) {
         return categoryRepository.save(category);
@@ -25,21 +27,21 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     @Override
-    public Category getCategoriesById(Long id) {
-        Category category = categoryRepository.findById(id);
-        if (category != null) {
-            return category;
+    public Category getCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Category with id " + id + " not found"));
+    }
+
+    @Override
+    public Category updateCategory(Category category) {
+        if (!categoryRepository.existsById(category.getId())) {
+            throw new NoSuchElementException("Category not found for update");
         }
-        throw new RuntimeException("Category with id " + id + " not found");
+        return categoryRepository.save(category);
     }
 
     @Override
-    public Category updateCategieries(Category category) {
-        return categoryRepository.updateCategory(category);
-    }
-
-    @Override
-    public void deleteCategories(Long id) {
+    public void deleteCategory(Long id) {
         categoryRepository.deleteById(id);
     }
 }

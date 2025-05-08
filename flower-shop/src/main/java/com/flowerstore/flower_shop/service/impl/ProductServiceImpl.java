@@ -1,5 +1,6 @@
 package com.flowerstore.flower_shop.service.impl;
 
+import com.flowerstore.flower_shop.model.Order;
 import com.flowerstore.flower_shop.model.Product;
 import com.flowerstore.flower_shop.repository.ProductRepository;
 import com.flowerstore.flower_shop.service.IProductService;
@@ -30,16 +31,16 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public Product getProductById(Long id) {
-        Product user = productRepository.findById(id);
-        if(user != null) {
-            return user;
-        }
-        throw new NoSuchElementException("Product with id" +  id + " does not exist");
+        return productRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Product with id " + id + " not found"));
     }
 
     @Override
     public Product updateProduct(Product product) {
-        return productRepository.updateProduct(product);
+        if (!productRepository.existsById(product.getId())) {
+            throw new NoSuchElementException("Product not found for update");
+        }
+        return productRepository.save(product);
     }
 
     @Override

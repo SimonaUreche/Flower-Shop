@@ -1,4 +1,6 @@
 package com.flowerstore.flower_shop.model;
+
+import jakarta.persistence.*;
 import lombok.*;
 
 @Builder
@@ -6,11 +8,20 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-
-//fiecare articol din cosul unui utilizator
-public class CartItem { //la checkout, toate CartItem sunt convertite in OrderDetail, iar cosul e golit
+@Entity
+@Table(
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "product_id"})
+) //constrangere ca un produs sa apara o singura data in cosul unui utilizator
+public class CartItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     private Product product;
+
     private int quantity;
 }

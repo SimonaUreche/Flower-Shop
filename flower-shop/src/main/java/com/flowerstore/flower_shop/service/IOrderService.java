@@ -4,7 +4,6 @@ import com.flowerstore.flower_shop.dto.CheckoutRequestDTO;
 import com.flowerstore.flower_shop.model.Order;
 
 import java.util.List;
-import java.util.Map;
 
 public interface IOrderService {
     Order addOrder(Order order);
@@ -12,8 +11,8 @@ public interface IOrderService {
     Order getOrderById(Long id);
     Order updateOrder(Order order);
     void deleteOrder(Long id);
-    //**
     Order processCheckout(CheckoutRequestDTO checkoutRequest);
+    List<Order> getOrdersByUserId(Long userId);
 
-
+    Order updateOrderStatus(Long id, String status);
 }

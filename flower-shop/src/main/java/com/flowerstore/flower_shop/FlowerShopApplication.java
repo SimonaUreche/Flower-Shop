@@ -1,6 +1,8 @@
 package com.flowerstore.flower_shop;
 
-import com.flowerstore.flower_shop.service.MockDataService;
+import com.flowerstore.flower_shop.constants.UserType;
+import com.flowerstore.flower_shop.model.User;
+import com.flowerstore.flower_shop.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,18 +14,22 @@ public class FlowerShopApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(FlowerShopApplication.class, args);
 	}
+//	@Bean
+//	CommandLineRunner init(UserRepository userRepository) {
+//		return args -> {
+//			if (userRepository.findById(0L).isEmpty()) {
+//				User guest = User.builder()
+//						.id(0L)
+//						.name("Guest")
+//						.email("guest@flowerstore.com")
+//						.password("")
+//						.role(UserType.CLIENT)
+//						.build();
+//
+//				// Dezactivezi temporar IDENTITY pentru a seta ID 0 dacă suportă DB-ul
+//				userRepository.save(guest);
+//			}
+//		};
+//	}
 
-	@Bean
-	CommandLineRunner run(MockDataService mockDataService) {
-		return args -> {
-			System.out.println("Users:");
-			mockDataService.getUsers().forEach(System.out::println);
-
-			System.out.println("Products:");
-			mockDataService.getProducts().forEach(System.out::println);
-
-			System.out.println("Orders:");
-			mockDataService.getOrders().forEach(System.out::println);
-		};
-	}
 }

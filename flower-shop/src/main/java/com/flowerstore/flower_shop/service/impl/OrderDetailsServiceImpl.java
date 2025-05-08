@@ -27,16 +27,16 @@ public class OrderDetailsServiceImpl implements IOrderDetailsService {
 
     @Override
     public OrderDetails getOrderDetailsById(Long id) {
-        OrderDetails orderDetails = orderDetailsRepository.findByOrderId(id);
-        if (orderDetails != null) {
-            return orderDetails;
-        }
-        throw new NoSuchElementException("OrderDetails with id " + id + "not found");
+        return orderDetailsRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("OrderDetails with id " + id + " not found"));
     }
 
     @Override
     public OrderDetails updateOrderDetails(OrderDetails orderDetails) {
-        return orderDetailsRepository.updateOrderDetails(orderDetails.getId(), orderDetails.getQuantity());
+        if (!orderDetailsRepository.existsById(orderDetails.getId())) {
+            throw new NoSuchElementException("OrderDetails not found for update");
+        }
+        return orderDetailsRepository.save(orderDetails);
     }
 
     @Override

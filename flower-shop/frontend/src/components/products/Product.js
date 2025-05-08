@@ -1,6 +1,6 @@
 import React from "react";
 import axiosInstance from '../../helper/axios';
-import { Container, Typography, Grid, IconButton, Badge, AppBar, Toolbar} from "@mui/material";
+import { Container, Typography, Grid, IconButton, Badge, AppBar, Toolbar } from "@mui/material";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ProductItem from "./ProductItem";
 import { Link } from "react-router-dom";
@@ -10,9 +10,10 @@ class Product extends React.Component {
         super(props);
         this.state = {
             products: [],
-            cartItems: JSON.parse(localStorage.getItem('cart')) || [],
-            cartCount: JSON.parse(localStorage.getItem('cart'))?.length || 0
+            cartItems: [],
+            cartCount: 0
         };
+        this.updateCartCount = this.updateCartCount.bind(this);
     }
 
     componentDidMount() {
@@ -25,25 +26,25 @@ class Product extends React.Component {
         window.removeEventListener('cartUpdated', this.updateCartCount);
     }
 
-
     fetchProducts = () => {
         axiosInstance.get("/products")
             .then(res => {
-                const products = res.data || [];
-                this.setState({ products });
+                this.setState({ products: res.data || [] });
             })
             .catch(error => {
-                console.log(error);
+                console.error("Error fetching products:", error);
             });
     };
+
     updateCartCount = async () => {
         try {
             const response = await axiosInstance.get("/cartItem");
+            const cart = response.data || [];
             this.setState({
-                cartCount: response.data.length,
-                cartItems: response.data
+                cartItems: cart,
+                cartCount: cart.length
             });
-            localStorage.setItem('cart', JSON.stringify(response.data));
+            localStorage.setItem('cart', JSON.stringify(cart));
         } catch (error) {
             console.error("Error updating cart:", error);
         }
@@ -51,23 +52,20 @@ class Product extends React.Component {
 
     addToCart = async (product) => {
         try {
-
-            const cartItem = {
-                product: product,
-                quantity: 1,
-                price: product.price,
-                user: { id: 1 } // sau orice ID de user test folosești
+            const user = JSON.parse(localStorage.getItem("USER_DATA")) || { id: 0 };
+            const cartItemDTO = {
+                //id,
+                userId: user?.id || 0,
+                product: {
+                    id: product.id
+                },
+                quantity: 1
             };
+            await axiosInstance.post("/cartItem", cartItemDTO);
+            this.updateCartCount();
 
-            await axiosInstance.post("/cartItem", cartItem);
-
-            const updatedCartResponse = await axiosInstance.get("/cartItem");
-            const updatedCart = updatedCartResponse.data;
-
-            localStorage.setItem('cart', JSON.stringify(updatedCart));
-            this.setState({
-                cartCount: updatedCart.length
-            });
+            const event = new Event('cartUpdated');
+            window.dispatchEvent(event);
         } catch (error) {
             console.error("Error adding to cart:", error);
         }
@@ -81,15 +79,10 @@ class Product extends React.Component {
             <>
                 <AppBar position="static">
                     <Toolbar>
-                        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        <Typography variant="h6" sx={{ flexGrow: 1 }}>
                             Magazinul Meu
                         </Typography>
-                        <IconButton
-                            color="inherit"
-                            component={Link}
-                            to="/cart"
-                            aria-label="cart"
-                        >
+                        <IconButton color="inherit" component={Link} to="/cart" aria-label="cart">
                             <Badge badgeContent={cartCount} color="error">
                                 <ShoppingCartIcon />
                             </Badge>
@@ -98,36 +91,16 @@ class Product extends React.Component {
                 </AppBar>
 
                 <Container maxWidth="lg" sx={{ py: 4 }}>
-                    <Typography variant="h4" gutterBottom align="center" sx={{ mb: 4 }}>
+                    <Typography variant="h4" gutterBottom align="center">
                         Lista produse
                     </Typography>
 
-                    <Grid
-                        container
-                        spacing={4}
-                        justifyContent="center"
-                        sx={{
-                            margin: '0 auto',
-                            maxWidth: '1200px'
-                        }}
-                    >
+                    <Grid container spacing={4} justifyContent="center">
                         {products.map((product) => (
-                            <Grid
-                                item
-                                xs={12}
-                                sm={5}
-                                md={5}
-                                lg={4}
-                                key={product.id}
-                                sx={{
-                                    display: 'flex',
-                                    justifyContent: 'center'
-                                }}
-                            >
+                            <Grid item xs={12} sm={6} md={4} key={product.id}>
                                 <ProductItem
                                     product={product}
                                     onAddToCart={() => this.addToCart(product)}
-                                    sx={{ width: '100%' }}
                                 />
                             </Grid>
                         ))}
